@@ -70,19 +70,16 @@
   </body>
 
   <script>
-  
-  
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const scoreElement = document.getElementById("score");
 
     const BOARD_COLOR = "#FFFFFF";
     const GUSANITO_COLOR = "#F00000";
-    const UP ={x:0, y:-1};
-    const DOWN = {x:0, y:1};
-    const LEFT = {x:-1, y:0};
-    const RIGHT = {x:1, y:0};
-
+    const UP = { x: 0, y: -1 };
+    const DOWN = { x: 0, y: 1 };
+    const LEFT = { x: -1, y: 0 };
+    const RIGHT = { x: 1, y: 0 };
 
     const SQUARE_SIZE = 15;
 
@@ -91,60 +88,96 @@
 
     let squares = [];
 
-    let gusanito = [{x:10, y:10, direction:UP}, {x:10, y:11, direction:UP}];
+    let gusanito = [
+      { x: 10, y: 10, direction: UP },
+      { x: 10, y: 11, direction: UP },
+    ];
 
-    
     let iteration = 0;
 
-   
     function randomNum(min, max) {
       return Math.random() * (max - min) + min;
     }
 
-
     function checkBoundaryCollision() {
       let x = gusanito[0].x + gusanito[0].direction.x;
       let y = gusanito[0].y + gusanito[0].direction.y;
-      return (x < 0 || x > canvas.width) || (y <0 || y > canvas.height);
+      return x < 0 || x > canvas.width || y < 0 || y > canvas.height;
     }
 
-    function updateGusanitoPosition(){
+    function updateGusanitoPosition() {
       for (let id = 0; id < gusanito.length; id++) {
         const element = gusanito[id];
         element.x = element.x + element.direction.x;
         element.y = element.y + element.direction.y;
         ctx.fillStyle = GUSANITO_COLOR;
-        ctx.fillRect(element.x*SQUARE_SIZE, element.y*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+        ctx.fillRect(
+          element.x * SQUARE_SIZE,
+          element.y * SQUARE_SIZE,
+          SQUARE_SIZE,
+          SQUARE_SIZE
+        );
       }
     }
-    function deleteGusanito(){
+    function deleteGusanito() {
       for (let id = 0; id < gusanito.length; id++) {
         const element = gusanito[id];
-        
-        ctx.clearRect(element.x*SQUARE_SIZE, element.y*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+
+        ctx.clearRect(
+          element.x * SQUARE_SIZE,
+          element.y * SQUARE_SIZE,
+          SQUARE_SIZE,
+          SQUARE_SIZE
+        );
       }
     }
 
-    var sleep = function(ms){
-    return new Promise(resolve => setTimeout(resolve, ms));
-};
+    var sleep = function (ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    };
+
+    function keyHandler() {
+      document.addEventListener("keydown", (event) => {
+        switch (event.key) {
+          case "ArrowUp":
+            if (gusanito[0].direction !== DOWN) {
+              gusanito[0].direction = UP;
+            }
+            break;
+          case "ArrowDown":
+            if (gusanito[0].direction !== UP) {
+              gusanito[0].direction = DOWN;
+            }
+            break;
+          case "ArrowLeft":
+            if (gusanito[0].direction !== RIGHT) {
+              gusanito[0].direction = LEFT;
+            }
+            break;
+          case "ArrowRight":
+            if (gusanito[0].direction !== LEFT) {
+              gusanito[0].direction = RIGHT;
+            }
+            break;
+          default:
+            break;
+        }
+      });
+    }
+
     async function draw() {
       await sleep(100);
-      
-
-      if (checkBoundaryCollision()){
-        scoreElement.textContent = 'Game Over';
+      keyHandler();
+      if (checkBoundaryCollision()) {
+        scoreElement.textContent = "Game Over";
       } else {
         deleteGusanito();
-      iteration++;
-      if (iteration % 1_000 === 0) console.log("interation", iteration);
-       requestAnimationFrame(draw);
-
+        iteration++;
+        if (iteration % 1_000 === 0) console.log("interation", iteration);
+        requestAnimationFrame(draw);
       }
 
-
       updateGusanitoPosition();
-
     }
 
     requestAnimationFrame(draw);
