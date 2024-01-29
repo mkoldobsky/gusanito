@@ -76,6 +76,7 @@
 
     const BOARD_COLOR = "#FFFFFF";
     const GUSANITO_COLOR = "#F00000";
+    const HEAD_COLOR = "#AFFFFF";
     const UP = { x: 0, y: -1 };
     const DOWN = { x: 0, y: 1 };
     const LEFT = { x: -1, y: 0 };
@@ -89,8 +90,10 @@
     let squares = [];
 
     let gusanito = [
-      { x: 10, y: 10, direction: UP },
-      { x: 10, y: 11, direction: UP },
+      { x: 10, y: 15, direction: UP },
+      { x: 10, y: 16, direction: UP },
+      { x: 10, y: 17, direction: UP },
+      { x: 10, y: 18, direction: UP },
     ];
 
     let iteration = 0;
@@ -110,13 +113,18 @@
         const element = gusanito[id];
         element.x = element.x + element.direction.x;
         element.y = element.y + element.direction.y;
-        ctx.fillStyle = GUSANITO_COLOR;
+        ctx.fillStyle = id === 0 ? HEAD_COLOR : GUSANITO_COLOR;
         ctx.fillRect(
           element.x * SQUARE_SIZE,
           element.y * SQUARE_SIZE,
           SQUARE_SIZE,
           SQUARE_SIZE
         );
+      }
+      for (let id = gusanito.length - 1; id > 0; id--) {
+        const element = gusanito[id];
+        element.direction = gusanito[id - 1].direction;
+        console.log(id);
       }
     }
     function deleteGusanito() {
@@ -167,7 +175,7 @@
 
     async function draw() {
       await sleep(100);
-      keyHandler();
+      // keyHandler();
       if (checkBoundaryCollision()) {
         scoreElement.textContent = "Game Over";
       } else {
@@ -179,6 +187,8 @@
 
       updateGusanitoPosition();
     }
+
+    keyHandler();
 
     requestAnimationFrame(draw);
   </script>
