@@ -109,6 +109,12 @@
       return x < 0 || x > canvas.width || y < 0 || y > canvas.height;
     }
 
+    function checkFruitCollision() {
+      return (
+        gusanito[0].x === fruit.x && gusanito[0].y === fruit.y && fruit.visible
+      );
+    }
+
     function updateGusanitoPosition() {
       for (let id = 0; id < gusanito.length; id++) {
         const element = gusanito[id];
@@ -142,12 +148,18 @@
     }
 
     function fruitShow() {
-      let x = randomNum(canvas.width);
-      let y = randomNum(canvas.height);
+      fruit.x = randomNum(canvas.width);
+      fruit.y = randomNum(canvas.height);
+      fruit.visible = true;
 
       // verify collision
       ctx.fillStyle = FRUIT_COLOR;
-      ctx.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+      ctx.fillRect(
+        fruit.x * SQUARE_SIZE,
+        fruit.y * SQUARE_SIZE,
+        SQUARE_SIZE,
+        SQUARE_SIZE
+      );
     }
 
     var sleep = function (ms) {
@@ -183,7 +195,8 @@
       });
     }
 
-    let fruitVisible = false;
+    let fruit = { x: 0, y: 0, visible: false };
+    let score = 0;
 
     async function draw() {
       await sleep(100);
@@ -193,15 +206,19 @@
       } else {
         deleteGusanito();
         iteration++;
-        if (!fruitVisible && iteration % 5 === 0) {
+        if (!fruit.visible && iteration % 5 === 0) {
           fruitShow();
-          fruitVisible = true;
         }
 
         requestAnimationFrame(draw);
       }
 
       updateGusanitoPosition();
+      if (checkFruitCollision()) {
+        score++;
+        scoreElement.textContent = "Score " + score;
+        fruit.visible = false;
+      }
     }
 
     keyHandler();
