@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Gusanito</title>
+    <!-- <link rel="canonical" href="https://pong-wars.koenvangilst.nl/" /> -->
+    <style>
+      html {
+        height: 100%;
+      }
+
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(to bottom, #172b36 0%, #d9e8e3 100%);
+      }
+
+      #container {
+        display: flex;
+        width: min(100%, 70vh);
+        max-width: 600px;
+        align-items: center;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      #pongCanvas {
+        display: block;
+        border-radius: 4px;
+        overflow: hidden;
+        width: 100%;
+        margin-top: auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      }
+
+      #score {
+        font-family: monospace;
+        margin-top: 30px;
+        font-size: 20px;
+        padding-left: 20px;
+        color: #172b36;
+      }
+
+      #made {
+        font-family: monospace;
+        margin-top: auto;
+        margin-bottom: 20px;
+        font-size: 12px;
+        padding-left: 20px;
+      }
+
+      #made a {
+        color: #172b36;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      <canvas id="gameCanvas" width="800" height="800"></canvas>
+      <div id="score"></div>
+      <!-- <p id="made">
+        made by <a href="https://koenvangilst.nl">Koen van Gilst</a> | source on
+        <a href="https://github.com/vnglst/pong-wars">github</a>
+      </p> -->
+    </div>
+  </body>
+
+  <script>
+  
+  
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreElement = document.getElementById("score");
+
+    const BOARD_COLOR = "#FFFFFF";
+    const GUSANITO_COLOR = "#F00000";
+    const UP ={x:0, y:-1};
+    const DOWN = {x:0, y:1};
+    const LEFT = {x:-1, y:0};
+    const RIGHT = {x:1, y:0};
+
+
+    const SQUARE_SIZE = 15;
+
+    const numSquaresX = canvas.width / SQUARE_SIZE;
+    const numSquaresY = canvas.height / SQUARE_SIZE;
+
+    let squares = [];
+
+    let gusanito = [{x:10, y:10, direction:UP}, {x:10, y:11, direction:UP}];
+
+    
+    let iteration = 0;
+
+   
+    function randomNum(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+
+    function checkBoundaryCollision() {
+      let x = gusanito[0].x + gusanito[0].direction.x;
+      let y = gusanito[0].y + gusanito[0].direction.y;
+      return (x < 0 || x > canvas.width) || (y <0 || y > canvas.height);
+    }
+
+    function updateGusanitoPosition(){
+      for (let id = 0; id < gusanito.length; id++) {
+        const element = gusanito[id];
+        element.x = element.x + element.direction.x;
+        element.y = element.y + element.direction.y;
+        ctx.fillStyle = GUSANITO_COLOR;
+        ctx.fillRect(element.x*SQUARE_SIZE, element.y*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+      }
+    }
+    function deleteGusanito(){
+      for (let id = 0; id < gusanito.length; id++) {
+        const element = gusanito[id];
+        
+        ctx.clearRect(element.x*SQUARE_SIZE, element.y*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+      }
+    }
+
+    var sleep = function(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+};
+    async function draw() {
+      await sleep(100);
+      
+
+      if (checkBoundaryCollision()){
+        scoreElement.textContent = 'Game Over';
+      } else {
+        deleteGusanito();
+      iteration++;
+      if (iteration % 1_000 === 0) console.log("interation", iteration);
+       requestAnimationFrame(draw);
+
+      }
+
+
+      updateGusanitoPosition();
+
+    }
+
+    requestAnimationFrame(draw);
+  </script>
+</html>
