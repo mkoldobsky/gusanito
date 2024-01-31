@@ -199,12 +199,11 @@
 
     function expandGusanito() {
       let tail = gusanito[gusanito.length - 1];
-      console.log(tail);
-      tail.x += tail.direction.x * -1;
-      tail.y += tail.direction.y * -1;
-      console.log(tail);
-      gusanito.push(tail);
-      console.log(gusanito);
+      let newTail = { direction: tail.direction };
+
+      newTail.x = tail.x + tail.direction.x * -1;
+      newTail.y = tail.y + tail.direction.y * -1;
+      gusanito.push(newTail);
     }
 
     function increaseSpeed() {
@@ -234,7 +233,7 @@
         score++;
         scoreElement.textContent = "Score " + score;
         fruit.visible = false;
-        //expandGusanito();
+        expandGusanito();
         increaseSpeed();
       }
     }
