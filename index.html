@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Gusanito</title>
+    <!-- <link rel="canonical" href="https://pong-wars.koenvangilst.nl/" /> -->
+    <style>
+      html {
+        height: 100%;
+      }
+
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(to bottom, #172b36 0%, #d9e8e3 100%);
+      }
+
+      #container {
+        display: flex;
+        width: min(100%, 70vh);
+        max-width: 600px;
+        align-items: center;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      #gameCanvas {
+        display: block;
+        border-radius: 4px;
+        overflow: hidden;
+        width: 100%;
+        margin-top: auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      }
+
+      #score {
+        font-family: monospace;
+        margin-top: 30px;
+        font-size: 20px;
+        padding-left: 20px;
+        color: #172b36;
+      }
+
+      #made {
+        font-family: monospace;
+        margin-top: auto;
+        margin-bottom: 20px;
+        font-size: 12px;
+        padding-left: 20px;
+      }
+
+      #made a {
+        color: #172b36;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container">
+      <canvas id="gameCanvas" width="800" height="800"></canvas>
+      <div id="score"></div>
+      <!-- <p id="made">
+        made by <a href="https://koenvangilst.nl">Koen van Gilst</a> | source on
+        <a href="https://github.com/vnglst/pong-wars">github</a>
+      </p> -->
+    </div>
+  </body>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreElement = document.getElementById("score");
+
+    const BOARD_COLOR = "#FFFFFF";
+    const GUSANITO_COLOR = "#FBBBBB";
+    const HEAD_COLOR = "#AFFFFF";
+    const FRUIT_COLOR = "#001100";
+    const UP = { x: 0, y: -1 };
+    const DOWN = { x: 0, y: 1 };
+    const LEFT = { x: -1, y: 0 };
+    const RIGHT = { x: 1, y: 0 };
+
+    const SQUARE_SIZE = 15;
+
+    const numSquaresX = canvas.width / SQUARE_SIZE;
+    const numSquaresY = canvas.height / SQUARE_SIZE;
+
+    let squares = [];
+
+    let gusanito = [
+      { x: 10, y: 15, direction: UP },
+      { x: 10, y: 16, direction: UP },
+      // { x: 10, y: 17, direction: UP },
+      // { x: 10, y: 18, direction: UP },
+    ];
+
+    let iteration = 0;
+
+    let speed = 200;
+
+    function randomNum(max) {
+      return Math.floor((Math.random() * max) / SQUARE_SIZE);
+    }
+
+    function checkBoundaryCollision() {
+      let x = gusanito[0].x + gusanito[0].direction.x;
+      let y = gusanito[0].y + gusanito[0].direction.y;
+      return x < 0 || x > canvas.width || y < 0 || y > canvas.height;
+    }
+
+    function checkFruitCollision() {
+      return (
+        gusanito[0].x === fruit.x && gusanito[0].y === fruit.y && fruit.visible
+      );
+    }
+
+    function updateGusanitoPosition() {
+      for (let id = 0; id < gusanito.length; id++) {
+        const element = gusanito[id];
+        element.x = element.x + element.direction.x;
+        element.y = element.y + element.direction.y;
+        ctx.fillStyle = id === 0 ? HEAD_COLOR : GUSANITO_COLOR;
+        ctx.fillRect(
+          element.x * SQUARE_SIZE,
+          element.y * SQUARE_SIZE,
+          SQUARE_SIZE,
+          SQUARE_SIZE
+        );
+      }
+      for (let id = gusanito.length - 1; id > 0; id--) {
+        const element = gusanito[id];
+        element.direction = gusanito[id - 1].direction;
+      }
+    }
+
+    function deleteGusanito() {
+      for (let id = 0; id < gusanito.length; id++) {
+        const element = gusanito[id];
+
+        ctx.clearRect(
+          element.x * SQUARE_SIZE,
+          element.y * SQUARE_SIZE,
+          SQUARE_SIZE,
+          SQUARE_SIZE
+        );
+      }
+    }
+
+    function fruitShow() {
+      fruit.x = randomNum(canvas.width);
+      fruit.y = randomNum(canvas.height);
+      fruit.visible = true;
+
+      // verify collision
+      ctx.fillStyle = FRUIT_COLOR;
+      ctx.fillRect(
+        fruit.x * SQUARE_SIZE,
+        fruit.y * SQUARE_SIZE,
+        SQUARE_SIZE,
+        SQUARE_SIZE
+      );
+    }
+
+    var sleep = function (ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    };
+
+    function keyHandler() {
+      document.addEventListener("keydown", (event) => {
+        switch (event.key) {
+          case "ArrowUp":
+            if (gusanito[0].direction !== DOWN) {
+              gusanito[0].direction = UP;
+            }
+            break;
+          case "ArrowDown":
+            if (gusanito[0].direction !== UP) {
+              gusanito[0].direction = DOWN;
+            }
+            break;
+          case "ArrowLeft":
+            if (gusanito[0].direction !== RIGHT) {
+              gusanito[0].direction = LEFT;
+            }
+            break;
+          case "ArrowRight":
+            if (gusanito[0].direction !== LEFT) {
+              gusanito[0].direction = RIGHT;
+            }
+            break;
+          default:
+            break;
+        }
+      });
+    }
+
+    function expandGusanito() {
+      let tail = gusanito[gusanito.length - 1];
+      let newTail = { direction: tail.direction };
+
+      newTail.x = tail.x + tail.direction.x * -1;
+      newTail.y = tail.y + tail.direction.y * -1;
+      gusanito.push(newTail);
+    }
+
+    function increaseSpeed() {
+      speed -= 10;
+    }
+
+    let fruit = { x: 0, y: 0, visible: false };
+    let score = 0;
+
+    async function draw() {
+      await sleep(speed);
+
+      if (checkBoundaryCollision()) {
+        scoreElement.textContent = "Game Over - Score " + score;
+      } else {
+        deleteGusanito();
+        iteration++;
+        if (!fruit.visible && iteration % 5 === 0) {
+          fruitShow();
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      updateGusanitoPosition();
+      if (checkFruitCollision()) {
+        score++;
+        scoreElement.textContent = "Score " + score;
+        fruit.visible = false;
+        expandGusanito();
+        increaseSpeed();
+      }
+    }
+
+    keyHandler();
+
+    requestAnimationFrame(draw);
+  </script>
+</html>
